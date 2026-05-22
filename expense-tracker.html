@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: white;
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container { max-width: 500px; margin: 0 auto; }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle { font-size: 12px; color: #444; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; }
+
+    /* Balance Cards */
+    .balance-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .balance-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .balance-label { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+    .balance-amount { font-size: 1.3rem; font-weight: 700; }
+    .balance-amount.total { color: #a78bfa; }
+    .balance-amount.income { color: #34d399; }
+    .balance-amount.expense { color: #f87171; }
+
+    /* Add Transaction */
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-title { font-size: 11px; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 11px; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+
+    input, select {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: white;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus { border-color: #a78bfa; }
+    select option { background: #111; }
+
+    .type-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .type-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #2a2a2a;
+      background: #0a0a0a;
+      color: #666;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .type-btn.income.active { background: rgba(52,211,153,0.15); border-color: #34d399; color: #34d399; }
+    .type-btn.expense.active { background: rgba(248,113,113,0.15); border-color: #f87171; color: #f87171; }
+
+    .add-btn {
+      width: 100%;
+      padding: 14px;
+      background: #a78bfa;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-btn:hover { background: #60a5fa; }
+
+    /* Transaction List */
+    .transaction-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0a0a0a;
+      border: 1px solid #1a1a1a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+    }
+
+    .transaction-item:hover { border-color: #2a2a2a; }
+
+    .transaction-left { display: flex; align-items: center; gap: 12px; }
+
+    .transaction-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .transaction-icon.income { background: rgba(52,211,153,0.15); }
+    .transaction-icon.expense { background: rgba(248,113,113,0.15); }
+
+    .transaction-name { font-size: 14px; font-weight: 600; }
+    .transaction-date { font-size: 11px; color: #555; margin-top: 2px; }
+
+    .transaction-right { display: flex; align-items: center; gap: 10px; }
+    .transaction-amount { font-size: 15px; font-weight: 700; }
+    .transaction-amount.income { color: #34d399; }
+    .transaction-amount.expense { color: #f87171; }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #333;
+      cursor: pointer;
+      font-size: 16px;
+      transition: color 0.2s;
+      padding: 4px;
+    }
+
+    .delete-btn:hover { color: #f87171; }
+
+    .empty { text-align: center; color: #333; font-size: 13px; padding: 24px; letter-spacing: 1px; }
+
+    .category-icons {
+      "Food": "🍔", "Transport": "🚗", "Shopping": "🛍️",
+      "Entertainment": "🎮", "Health": "💊", "Education": "📚",
+      "Salary": "💰", "Freelance": "💻", "Other": "📦"
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>💸 Expense Tracker</h1>
+  <div class="subtitle">Track your finances</div>
+
+  <div class="balance-grid">
+    <div class="balance-card">
+      <div class="balance-label">Balance</div>
+      <div class="balance-amount total" id="total-balance">$0.00</div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-label">Income</div>
+      <div class="balance-amount income" id="total-income">$0.00</div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-label">Expenses</div>
+      <div class="balance-amount expense" id="total-expense">$0.00</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">// Add Transaction</div>
+
+    <div class="type-row">
+      <button class="type-btn income active" id="btn-income" onclick="setType('income')">+ Income</button>
+      <button class="type-btn expense" id="btn-expense" onclick="setType('expense')">- Expense</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input type="text" id="description" placeholder="e.g. Grocery shopping"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Amount ($)</label>
+      <input type="number" id="amount" placeholder="0.00" min="0" step="0.01"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select id="category">
+        <option value="Food">🍔 Food</option>
+        <option value="Transport">🚗 Transport</option>
+        <option value="Shopping">🛍️ Shopping</option>
+        <option value="Entertainment">🎮 Entertainment</option>
+        <option value="Health">💊 Health</option>
+        <option value="Education">📚 Education</option>
+        <option value="Salary">💰 Salary</option>
+        <option value="Freelance">💻 Freelance</option>
+        <option value="Other">📦 Other</option>
+      </select>
+    </div>
+
+    <button class="add-btn" onclick="addTransaction()">Add Transaction</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">// Transactions</div>
+    <div class="transaction-list" id="transaction-list">
+      <div class="empty">No transactions yet. Add one above!</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+  let currentType = 'income';
+
+  const ICONS = {
+    Food: '🍔', Transport: '🚗', Shopping: '🛍️',
+    Entertainment: '🎮', Health: '💊', Education: '📚',
+    Salary: '💰', Freelance: '💻', Other: '📦'
+  };
+
+  function setType(type) {
+    currentType = type;
+    document.getElementById('btn-income').classList.toggle('active', type === 'income');
+    document.getElementById('btn-expense').classList.toggle('active', type === 'expense');
+  }
+
+  function addTransaction() {
+    const desc = document.getElementById('description').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+    const category = document.getElementById('category').value;
+
+    if (!desc || isNaN(amount) || amount <= 0) {
+      alert('Please fill in all fields!');
+      return;
+    }
+
+    transactions.unshift({
+      id: Date.now(),
+      description: desc,
+      amount,
+      type: currentType,
+      category,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    });
+
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    document.getElementById('description').value = '';
+    document.getElementById('amount').value = '';
+    render();
+  }
+
+  function deleteTransaction(id) {
+    transactions = transactions.filter(t => t.id !== id);
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    render();
+  }
+
+  function render() {
+    const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const balance = income - expense;
+
+    document.getElementById('total-balance').textContent = `$${balance.toFixed(2)}`;
+    document.getElementById('total-income').textContent = `$${income.toFixed(2)}`;
+    document.getElementById('total-expense').textContent = `$${expense.toFixed(2)}`;
+
+    const list = document.getElementById('transaction-list');
+    if (transactions.length === 0) {
+      list.innerHTML = '<div class="empty">No transactions yet. Add one above!</div>';
+      return;
+    }
+
+    list.innerHTML = transactions.map(t => `
+      <div class="transaction-item">
+        <div class="transaction-left">
+          <div class="transaction-icon ${t.type}">${ICONS[t.category] || '📦'}</div>
+          <div>
+            <div class="transaction-name">${t.description}</div>
+            <div class="transaction-date">${t.category} • ${t.date}</div>
+          </div>
+        </div>
+        <div class="transaction-right">
+          <div class="transaction-amount ${t.type}">
+            ${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}
+          </div>
+          <button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  render();
+</script>
+</body>
+</html>
